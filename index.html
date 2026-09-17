@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0E1A">
+  <meta name="description" content="Palpites de futebol grátis toda semana com 80% de acerto.">
+  <title>Palpite10 Gratis</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <!-- Meta Pixel (replace YOUR_PIXEL_ID) -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', 'YOUR_PIXEL_ID');
+    fbq('track', 'PageView');
+  </script>
+
+  <!-- GA4 (replace G-XXXXXXXXXX) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+</head>
+<body>
+
+  <!-- SCREEN: LANDING -->
+  <section id="screen-landing" class="screen">
+    <div class="container">
+      <div class="hero">
+        <div class="badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          Método com histórico comprovado
+        </div>
+        <h1>3 Palpites de Futebol Grátis Toda Semana. <span class="accent">80% de Acerto.</span></h1>
+        <p class="sub">Junte-se a mais de 2.000 torcedores brasileiros que recebem análises reais e documentadas toda semana. Sem prints falsos. Sem promessas vazias. Apenas método.</p>
+        <button class="btn-primary" data-nav="/quiz/1" data-event="quiz_start">
+          Começar Meu Acesso Grátis →
+        </button>
+        <p class="micro">Leva menos de 30 segundos. 100% grátis.</p>
+      </div>
+      <div class="trust-bar">
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 16 8 12"/></svg>
+          <span>80% de Acerto</span>
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          <span>+2.000 Membros</span>
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 0 1 0-4h2m12 0h2a2 2 0 0 1 0 4h-2M6 4h12v6a6 6 0 0 1-12 0V4z"/><path d="M9 20h6"/></svg>
+          <span>4 Anos de Resultados</span>
+        </div>
+      </div>
+      <p class="footer">Conteúdo informativo sobre futebol. Para maiores de 18 anos.</p>
+    </div>
+  </section>
+
+  <!-- SCREEN: QUIZ (shared shell for Q1 to Q4) -->
+  <section id="screen-quiz" class="screen">
+    <header class="progress-header">
+      <button class="back-btn" aria-label="Voltar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="step-text" id="step-text">Etapa 1 de 4</span>
+      <div class="spacer"></div>
+    </header>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <div class="container quiz-content">
+      <h2 class="question" id="question-text"></h2>
+      <div class="answers" id="answers-list"></div>
+    </div>
+  </section>
+
+  <!-- SCREEN: THANK YOU -->
+  <section id="screen-thankyou" class="screen">
+    <div class="container thankyou">
+      <div class="check-badge">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>Você Está Dentro.</h2>
+      <p class="sub" id="thankyou-sub">Preparando seu acesso ao canal gratuito...</p>
+
+      <p class="count-label">Abrindo Telegram em</p>
+      <div class="countdown-circle">
+        <svg class="ring" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="46" stroke="#1F2637" stroke-width="4" fill="none"/>
+          <circle id="ring-progress" cx="50" cy="50" r="46" stroke="#00FF87" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+        </svg>
+        <span class="count-number" id="countdown">8</span>
+        <span class="count-unit">segundos</span>
+      </div>
+      <p class="count-hint">Se não abrir automaticamente, use o botão abaixo.</p>
+
+      <button class="btn-primary" id="telegram-btn" style="display:none;">👉 Abrir Telegram Agora</button>
+
+      <div class="vip-card">
+        <p>Quer a experiência completa? Membros VIP recebem palpites diários, análises completas e 80%+ de acerto.</p>
+        <a href="https://t.me/palpite10vipbot" target="_blank" rel="noopener" id="vip-link">Entrar no VIP: @palpite10vipbot</a>
+      </div>
+
+      <p class="footer">Conteúdo informativo sobre futebol. Para maiores de 18 anos.</p>
+    </div>
+  </section>
+
+  <!-- SCREEN: DISQUALIFIED -->
+  <section id="screen-disqualified" class="screen">
+    <div class="container disq">
+      <div class="gray-badge">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <h2>Tudo Bem. O Telegram é Necessário.</h2>
+      <p class="sub">Nossos palpites diários são entregues via Telegram porque é a forma mais rápida e segura de receber o conteúdo em tempo real. Sem o aplicativo, não conseguimos te enviar os palpites.</p>
+
+      <div class="step-card">
+        <div class="step">
+          <span class="step-num">1</span>
+          <p>Baixe o Telegram. É grátis e leva 30 segundos.</p>
+          <button class="btn-primary" id="download-telegram">Baixar Telegram</button>
+        </div>
+        <div class="divider"></div>
+        <div class="step">
+          <span class="step-num">2</span>
+          <p>Depois de instalar, volte aqui e clique no botão abaixo.</p>
+          <button class="btn-primary" data-nav="/obrigado?e=retry&q=qualified">Já Instalei. Quero Meu Acesso →</button>
+        </div>
+      </div>
+
+      <div class="vip-card">
+        <p>Quando estiver dentro, você pode acessar o VIP com palpites diários e 80%+ de acerto.</p>
+        <a href="https://t.me/palpite10vipbot" target="_blank" rel="noopener" id="vip-link-2">Entrar no VIP: @palpite10vipbot</a>
+      </div>
+
+      <p class="footer">Conteúdo informativo sobre futebol. Para maiores de 18 anos.</p>
+    </div>
+  </section>
+
+  <script src="/app.js"></script>
+</body>
+</html>
