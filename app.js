@@ -66,7 +66,7 @@ const quizQuestions = {
   },
 
   2: {
-    question: "O que mais importa para você em uma análise?",
+    question: "O que mais importa para você na hora de escolher uma análise?",
     answers: [
       {
         id: "q2_a1",
@@ -88,7 +88,7 @@ const quizQuestions = {
   },
 
   3: {
-    question: "Se você pudesse ter um mês excepcional, o que faria?",
+    question: "Se você tivesse um mês excepcional, o que faria primeiro?",
     answers: [
       {
         id: "q3_a1",
@@ -110,7 +110,7 @@ const quizQuestions = {
   },
 
   4: {
-    question: "Você usa o Telegram no dia a dia?",
+    question: "Você já usa o Telegram no dia a dia?",
     answers: [
       {
         id: "q4_a1",
@@ -742,21 +742,22 @@ function renderLanding(direction = "forward") {
 
           <div class="badge">
             <span class="badge-dot"></span>
-            Método com histórico comprovado
+            Método com histórico documentado
           </div>
 
           <h1 class="hero-title">
-            3 Palpites de Futebol
+            Palpites de Futebol
             Grátis Toda Semana.
             <span class="hero-highlight">
-              80% de Acerto.
+              Resultados Documentados.
             </span>
           </h1>
 
           <p class="hero-subtitle">
             Junte-se a mais de 2.000 torcedores brasileiros
-            que recebem análises reais e documentadas toda semana.
-            Sem prints falsos. Sem promessas vazias. Apenas método.
+            que recebem análises reais toda semana.
+            Sem prints falsos. Sem promessas vazias.
+            Apenas método comprovado na prática.
           </p>
 
           <div class="hero-actions">
@@ -764,13 +765,13 @@ function renderLanding(direction = "forward") {
               type="button"
               class="primary-button"
               id="start-quiz"
-              aria-label="Começar meu acesso grátis"
+              aria-label="Quero meu acesso grátis agora"
             >
-              Começar Meu Acesso Grátis →
+              Quero Meu Acesso Grátis Agora →
             </button>
 
             <p class="microcopy hero-microcopy">
-              Leva menos de 30 segundos. 100% grátis.
+              Leva menos de 30 segundos. 100% grátis. Sem cartão.
             </p>
           </div>
 
@@ -778,20 +779,20 @@ function renderLanding(direction = "forward") {
 
             <div class="trust-item">
               <div class="trust-icon">✓</div>
-              <div class="trust-value">80% de Acerto</div>
+              <div class="trust-value">Alta Assertividade</div>
               <div class="trust-label">Histórico</div>
             </div>
 
             <div class="trust-item">
               <div class="trust-icon">+</div>
-              <div class="trust-value">2.000 Membros</div>
-              <div class="trust-label">Comunidade</div>
+              <div class="trust-value">+2.000 Membros</div>
+              <div class="trust-label">Comunidade Ativa</div>
             </div>
 
             <div class="trust-item">
               <div class="trust-icon">4</div>
               <div class="trust-value">4 Anos</div>
-              <div class="trust-label">Resultados</div>
+              <div class="trust-label">De Resultados</div>
             </div>
 
           </div>
@@ -930,7 +931,7 @@ function renderQuiz(
           </h1>
 
           <p class="quiz-subtitle">
-            Escolha uma opção para continuar.
+            Toque na opção que mais combina com você.
           </p>
 
           <div
@@ -1132,8 +1133,8 @@ function renderThankYou(
     type === "borderline"
       ? `
         Sabemos que você usa o Telegram de vez em quando.
-        Depois de entrar, você vai querer abrir todos os dias.
-        Os palpites chegam em tempo real e valem a pena.
+        Mas depois de entrar, você vai abrir todo dia.
+        Os palpites chegam em tempo real e fazem diferença.
       `
       : `
         Preparando seu acesso ao canal gratuito...
@@ -1153,7 +1154,7 @@ function renderThankYou(
           </div>
 
           <h1 class="center-title">
-            Você Está Dentro.
+            Você Está Dentro!
           </h1>
 
           <p class="center-subtitle">
@@ -1163,7 +1164,7 @@ function renderThankYou(
           <div class="countdown-wrap">
 
             <div class="countdown-label">
-              Abrindo Telegram em
+              Abrindo seu acesso em
             </div>
 
             <div
@@ -1203,8 +1204,8 @@ function renderThankYou(
             </div>
 
             <p class="countdown-hint">
-              Se não abrir automaticamente,
-              use o botão abaixo.
+              Se não abrir sozinho,
+              toque no botão abaixo.
             </p>
 
             <div class="telegram-button" id="telegram-button">
@@ -1213,7 +1214,7 @@ function renderThankYou(
                 class="primary-button"
                 id="telegram-btn"
               >
-                👉 Abrir Telegram Agora
+                👉 Entrar no Canal Grátis Agora
               </button>
             </div>
 
@@ -1306,7 +1307,7 @@ function vipCardTemplate() {
 
       <p class="vip-description">
         Membros VIP recebem palpites diários,
-        análises completas e 80%+ de acerto.
+        análises completas e prioridade nos resultados.
       </p>
 
       <a
@@ -1316,7 +1317,7 @@ function vipCardTemplate() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        Entrar no VIP: @palpite10vipbot →
+        Quero o VIP: @palpite10vipbot →
       </a>
 
     </aside>
@@ -1477,8 +1478,8 @@ function renderDisqualified(
           </div>
 
           <h1 class="center-title">
-            Tudo Bem.
-            O Telegram é Necessário.
+            Falta Só Um Passo.
+            Instale o Telegram.
           </h1>
 
           <p class="center-subtitle">
@@ -1500,7 +1501,7 @@ function renderDisqualified(
 
                 <h2 class="step-title">
                   Baixe o Telegram.
-                  É grátis e leva 30 segundos.
+                  Grátis. Leva 30 segundos.
                 </h2>
 
               </div>
@@ -1543,7 +1544,7 @@ function renderDisqualified(
                 class="primary-button"
                 id="retry-access"
               >
-                Já Instalei. Quero Meu Acesso →
+                Já Instalei. Liberar Meu Acesso →
               </a>
 
             </section>
