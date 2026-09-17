@@ -12,18 +12,19 @@
 
 const CONFIG = {
   /*
-    pixelId is hardcoded as a fallback so the browser pixel
-    always initializes, even if /api/track is unreachable.
-    loadPublicConfig() may overwrite it with the value from
-    the server, but only if that value is non-empty.
+    pixelId is hardcoded so the pixel always initializes,
+    even if /api/track is unreachable.
+    loadPublicConfig() may overwrite it with a non-empty
+    value returned by the server.
   */
   pixelId: "1105614272040376",
-  ga4Id: "",
   telegramFreeUrl: "https://t.me/palpite10gratis",
   telegramVipUrl: "https://t.me/palpite10vipbot",
   telegramIosUrl: "https://apps.apple.com/app/telegram-messenger/id686449807",
   telegramAndroidUrl: "https://play.google.com/store/apps/details?id=org.telegram.messenger"
 };
+
+const CURRENCY = "BRL";
 
 
 /* =========================================================
@@ -53,88 +54,37 @@ const quizQuestions = {
   1: {
     question: "Com que frequência você acompanha futebol?",
     answers: [
-      {
-        id: "q1_a1",
-        text: "Todo dia"
-      },
-      {
-        id: "q1_a2",
-        text: "Algumas vezes por semana"
-      },
-      {
-        id: "q1_a3",
-        text: "Só nos fins de semana"
-      },
-      {
-        id: "q1_a4",
-        text: "Quase nunca, mas quero começar"
-      }
+      { id: "q1_a1", text: "Todo dia" },
+      { id: "q1_a2", text: "Algumas vezes por semana" },
+      { id: "q1_a3", text: "Só nos fins de semana" },
+      { id: "q1_a4", text: "Quase nunca, mas quero começar" }
     ]
   },
-
   2: {
     question: "O que mais importa para você na hora de escolher uma análise?",
     answers: [
-      {
-        id: "q2_a1",
-        text: "Resultados verificados"
-      },
-      {
-        id: "q2_a2",
-        text: "Análises honestas"
-      },
-      {
-        id: "q2_a3",
-        text: "Grandes acertos, não pequenos"
-      },
-      {
-        id: "q2_a4",
-        text: "Uma comunidade real"
-      }
+      { id: "q2_a1", text: "Resultados verificados" },
+      { id: "q2_a2", text: "Análises honestas" },
+      { id: "q2_a3", text: "Grandes acertos, não pequenos" },
+      { id: "q2_a4", text: "Uma comunidade real" }
     ]
   },
-
   3: {
     question: "Se você tivesse um mês excepcional, o que faria primeiro?",
     answers: [
-      {
-        id: "q3_a1",
-        text: "Pagar dívidas"
-      },
-      {
-        id: "q3_a2",
-        text: "Investir ou guardar"
-      },
-      {
-        id: "q3_a3",
-        text: "Viajar"
-      },
-      {
-        id: "q3_a4",
-        text: "Cuidar da família"
-      }
+      { id: "q3_a1", text: "Pagar dívidas" },
+      { id: "q3_a2", text: "Investir ou guardar" },
+      { id: "q3_a3", text: "Viajar" },
+      { id: "q3_a4", text: "Cuidar da família" }
     ]
   },
-
   4: {
     question: "Você já usa o Telegram no dia a dia?",
     answers: [
-      {
-        id: "q4_a1",
-        text: "Sim, uso todos os dias"
-      },
-      {
-        id: "q4_a2",
-        text: "Sim, mas uso de vez em quando"
-      },
-      {
-        id: "q4_a3",
-        text: "Tenho conta mas quase não abro"
-      },
-      {
-        id: "q4_a4",
-        text: "Não tenho Telegram"
-      }
+      { id: "q4_a1", text: "Sim, uso todos os dias" },
+      { id: "q4_a2", text: "Sim, mas uso de vez em quando" },
+      { id: "q4_a3", text: "Tenho conta mas quase não abro" },
+      { id: "q4_a4", text: "Não tenho Telegram" }
     ]
   }
 };
@@ -190,11 +140,6 @@ function haptic() {
       // Ignore unsupported vibration implementations.
     }
   }
-}
-
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
@@ -277,7 +222,6 @@ function resetState() {
 
   The endpoint returns:
     META_PIXEL_ID
-    GA4_ID
     TELEGRAM_FREE_URL
     TELEGRAM_VIP_URL
 
@@ -291,9 +235,7 @@ async function loadPublicConfig() {
   try {
     const response = await fetch("/api/track", {
       method: "GET",
-      headers: {
-        Accept: "application/json"
-      },
+      headers: { Accept: "application/json" },
       cache: "no-store"
     });
 
@@ -305,10 +247,6 @@ async function loadPublicConfig() {
 
     if (data.pixelId && String(data.pixelId).trim()) {
       CONFIG.pixelId = data.pixelId;
-    }
-
-    if (data.ga4Id && String(data.ga4Id).trim()) {
-      CONFIG.ga4Id = data.ga4Id;
     }
 
     if (data.telegramFreeUrl) {
@@ -383,47 +321,6 @@ function initializePixel() {
   );
 
   window.fbq("init", CONFIG.pixelId);
-
-  /*
-    PageView is handled centrally in renderRoute so
-    SPA navigations are tracked as well.
-  */
-}
-
-
-/* =========================================================
-   GA4
-   ========================================================= */
-
-function initializeGA4() {
-  if (!CONFIG.ga4Id) {
-    console.warn("GA4_ID is not configured.");
-    return;
-  }
-
-  if (typeof window.gtag === "function") {
-    return;
-  }
-
-  const script = document.createElement("script");
-
-  script.async = true;
-  script.src =
-    `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(CONFIG.ga4Id)}`;
-
-  document.head.appendChild(script);
-
-  window.dataLayer = window.dataLayer || [];
-
-  window.gtag = function() {
-    window.dataLayer.push(arguments);
-  };
-
-  window.gtag("js", new Date());
-
-  window.gtag("config", CONFIG.ga4Id, {
-    send_page_view: false
-  });
 }
 
 
@@ -431,28 +328,13 @@ function initializeGA4() {
    PIXEL EVENT
    ========================================================= */
 
-function firePixel(
-  eventName,
-  params = {},
-  isCustom = false
-) {
+function firePixel(eventName, params = {}, isCustom = false) {
   if (typeof window.fbq !== "function") {
-    console.warn(
-      `[firePixel] "${eventName}" skipped — fbq not initialized.`
-    );
+    console.warn(`[firePixel] "${eventName}" skipped — fbq not initialized.`);
     return;
   }
 
-  /*
-    event_id (snake_case) is used for CAPI dedup.
-    Meta's browser pixel expects eventID (camelCase).
-    Remove event_id from the spread to avoid sending it
-    as a custom parameter.
-  */
-  const {
-    event_id,
-    ...rest
-  } = params;
+  const { event_id, ...rest } = params;
 
   const payload = {
     ...rest,
@@ -460,17 +342,9 @@ function firePixel(
   };
 
   if (isCustom) {
-    window.fbq(
-      "trackCustom",
-      eventName,
-      payload
-    );
+    window.fbq("trackCustom", eventName, payload);
   } else {
-    window.fbq(
-      "track",
-      eventName,
-      payload
-    );
+    window.fbq("track", eventName, payload);
   }
 }
 
@@ -479,26 +353,13 @@ function firePixel(
    CAPI
    ========================================================= */
 
-async function fireCAPI(
-  eventName,
-  params = {},
-  isCustom = false
-) {
-  /*
-    event_id goes to top level (for Meta dedup).
-    Everything else goes inside custom_data.
-  */
-  const {
-    event_id,
-    ...customData
-  } = params;
+async function fireCAPI(eventName, params = {}, isCustom = false) {
+  const { event_id, ...customData } = params;
 
   try {
     await fetch("/api/track", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         event_name: eventName,
         event_id,
@@ -506,43 +367,17 @@ async function fireCAPI(
         event_source_url: window.location.href,
         action_source: "website",
         is_custom: isCustom,
-
         user_data: {
           fbp: getCookie("_fbp"),
           fbc: getCookie("_fbc")
         },
-
         custom_data: customData
       }),
-
       keepalive: true
     });
   } catch (error) {
-    console.warn(
-      "CAPI event failed.",
-      error
-    );
+    console.warn("CAPI event failed.", error);
   }
-}
-
-
-/* =========================================================
-   GA4 EVENT
-   ========================================================= */
-
-function fireGA4(
-  eventName,
-  params = {}
-) {
-  if (typeof window.gtag !== "function") {
-    return;
-  }
-
-  window.gtag(
-    "event",
-    eventName,
-    params
-  );
 }
 
 
@@ -550,68 +385,151 @@ function fireGA4(
    COMBINED TRACKING
    ========================================================= */
 
-function track(
-  eventName,
-  params = {},
-  isCustom = false
-) {
+function track(eventName, params = {}, isCustom = false) {
   if (typeof window.fbq !== "function") {
-    console.warn(
-      `[track] "${eventName}" skipped — fbq not initialized yet.`
-    );
+    console.warn(`[track] "${eventName}" skipped — fbq not initialized.`);
     return null;
   }
 
   const event_id = generateEventId();
+  const enriched = { ...params, event_id };
 
-  const enriched = {
-    ...params,
-    event_id
-  };
-
-  firePixel(
-    eventName,
-    enriched,
-    isCustom
-  );
-
-  fireCAPI(
-    eventName,
-    enriched,
-    isCustom
-  );
-
-  fireGA4(
-    eventName,
-    enriched
-  );
+  firePixel(eventName, enriched, isCustom);
+  fireCAPI(eventName, enriched, isCustom);
 
   return event_id;
 }
 
 
 /* =========================================================
-   LEAD
+   FUNNEL EVENTS
    ========================================================= */
 
 /*
-  Lead represents the real conversion:
-  the user actually opened the Telegram channel.
-
-  Fires only once (guarded by leadFired).
+  PageView: fires once per session, only on the landing.
 */
-function fireLead(
-  value,
-  label
-) {
-  if (leadFired) {
-    return;
-  }
+function firePageViewOnce() {
+  if (typeof window.fbq !== "function") return;
+  if (sessionStorage.getItem("p10_pv_fired")) return;
 
+  sessionStorage.setItem("p10_pv_fired", "1");
+  window.fbq("track", "PageView");
+}
+
+
+/*
+  ViewContent: user saw the landing page.
+  Value anchor: 0.10 BRL.
+*/
+function fireViewContent() {
+  if (sessionStorage.getItem("p10_vc_fired")) return;
+  sessionStorage.setItem("p10_vc_fired", "1");
+
+  track(
+    "ViewContent",
+    {
+      content_name: "Palpite10 Landing",
+      content_category: "Football Predictions",
+      value: 0.10,
+      currency: CURRENCY
+    },
+    false
+  );
+}
+
+
+/*
+  InitiateCheckout: user committed to the quiz.
+  Standard event Meta understands as strong intent.
+*/
+function fireInitiateCheckout() {
+  track(
+    "InitiateCheckout",
+    {
+      content_name: "Palpite10 Quiz",
+      content_category: "Football Predictions",
+      value: 0.50,
+      currency: CURRENCY
+    },
+    false
+  );
+}
+
+
+/*
+  QuizStep: a single custom event for every quiz step.
+  Meta learns progression with consistent event name
+  and increasing value per step.
+*/
+const QUIZ_STEP_VALUES = {
+  1: 0.75,
+  2: 1.00,
+  3: 1.50,
+  4: 2.00
+};
+
+function fireQuizStep(step, answerId) {
+  track(
+    "QuizStep",
+    {
+      content_name: "Palpite10 Quiz",
+      content_category: "Football Predictions",
+      step,
+      answer: answerId,
+      value: QUIZ_STEP_VALUES[step] || 0.75,
+      currency: CURRENCY
+    },
+    true
+  );
+}
+
+
+/*
+  CompleteRegistration: user finished the quiz.
+  Standard event — the biggest mid-funnel signal.
+*/
+function fireQuizComplete(qualification) {
+  track(
+    "CompleteRegistration",
+    {
+      content_name: "Palpite10 Quiz",
+      content_category: "Football Predictions",
+      status: qualification,
+      value: 3.00,
+      currency: CURRENCY
+    },
+    false
+  );
+}
+
+
+/*
+  AddPaymentInfo: user reached the success page.
+  Standard event — the strongest pre-conversion signal.
+*/
+function fireThankYouReached(qualification) {
+  track(
+    "AddPaymentInfo",
+    {
+      content_name: "Palpite10 Thank You",
+      content_category: "Football Predictions",
+      status: qualification,
+      value: 4.00,
+      currency: CURRENCY
+    },
+    false
+  );
+}
+
+
+/*
+  Lead: THE conversion. Fires once, only when the user
+  actually opens the Telegram channel.
+*/
+function fireLead(qualification) {
+  if (leadFired) return;
   if (typeof window.fbq !== "function") {
-    console.warn(
-      "[fireLead] Skipped — fbq not initialized."
-    );
+    console.warn("[fireLead] Skipped — fbq not initialized.");
     return;
   }
 
@@ -620,39 +538,50 @@ function fireLead(
   track(
     "Lead",
     {
-      content_name: label,
+      content_name: "Palpite10 Free Access",
       content_category: "Football Predictions",
-      value,
-      currency: "BRL"
+      status: qualification,
+      value: 5.00,
+      currency: CURRENCY
     },
     false
-  );
-
-  fireGA4(
-    "generate_lead",
-    {
-      value,
-      currency: "BRL",
-      label
-    }
   );
 }
 
 
-/* =========================================================
-   PAGEVIEW
-   ========================================================= */
+/*
+  Subscribe: user clicked the VIP upsell link.
+*/
+function fireSubscribeIntent() {
+  track(
+    "Subscribe",
+    {
+      content_name: "Palpite10 VIP",
+      content_category: "Football Predictions",
+      value: 25.00,
+      currency: CURRENCY
+    },
+    false
+  );
+}
 
-function firePageView(path) {
-  if (typeof window.fbq === "function") {
-    window.fbq("track", "PageView");
-  }
 
-  if (typeof window.gtag === "function") {
-    window.gtag("event", "page_view", {
-      page_path: path
-    });
-  }
+/*
+  CustomizeProduct: disqualified user tapped the Telegram
+  download link — a recovery signal.
+*/
+function fireCustomizeProduct(device) {
+  track(
+    "CustomizeProduct",
+    {
+      content_name: "Telegram Download",
+      content_category: "Football Predictions",
+      device,
+      value: 1.00,
+      currency: CURRENCY
+    },
+    false
+  );
 }
 
 
@@ -660,31 +589,16 @@ function firePageView(path) {
    ROUTING
    ========================================================= */
 
-function navigate(
-  path,
-  options = {}
-) {
-  const {
-    replace = false,
-    direction = "forward"
-  } = options;
+function navigate(path, options = {}) {
+  const { replace = false, direction = "forward" } = options;
 
   haptic();
-
   previousRoute = window.location.pathname;
 
   if (replace) {
-    history.replaceState(
-      {},
-      "",
-      path
-    );
+    history.replaceState({}, "", path);
   } else {
-    history.pushState(
-      {},
-      "",
-      path
-    );
+    history.pushState({}, "", path);
   }
 
   renderRoute(direction);
@@ -699,36 +613,22 @@ function router() {
 function renderRoute(direction = "forward") {
   clearCountdown();
 
-  const {
-    path,
-    params
-  } = getRoute();
-
-  firePageView(path);
+  const { path, params } = getRoute();
 
   if (path === "/") {
+    firePageViewOnce();
     renderLanding(direction);
     return;
   }
 
   if (/^\/quiz\/[1-4]$/.test(path)) {
-    const questionNumber =
-      Number(path.split("/")[2]);
-
-    renderQuiz(
-      questionNumber,
-      direction
-    );
-
+    const questionNumber = Number(path.split("/")[2]);
+    renderQuiz(questionNumber, direction);
     return;
   }
 
   if (path === "/obrigado") {
-    renderThankYou(
-      params.get("q"),
-      direction
-    );
-
+    renderThankYou(params.get("q"), direction);
     return;
   }
 
@@ -737,10 +637,7 @@ function renderRoute(direction = "forward") {
     return;
   }
 
-  navigate("/", {
-    replace: true,
-    direction: "back"
-  });
+  navigate("/", { replace: true, direction: "back" });
 }
 
 
@@ -748,16 +645,9 @@ function renderRoute(direction = "forward") {
    PAGE WRAPPER
    ========================================================= */
 
-function pageTemplate(
-  content,
-  classes = "",
-  direction = "forward"
-) {
+function pageTemplate(content, classes = "", direction = "forward") {
   return `
-    <section
-      class="page ${classes}"
-      data-direction="${escapeHTML(direction)}"
-    >
+    <section class="page ${classes}" data-direction="${escapeHTML(direction)}">
       <div class="route-stage ${escapeHTML(direction)}">
         ${content}
       </div>
@@ -872,33 +762,14 @@ function renderLanding(direction = "forward") {
     direction
   );
 
-  const startButton =
-    document.getElementById("start-quiz");
+  const startButton = document.getElementById("start-quiz");
 
   if (startButton) {
-    startButton.addEventListener(
-      "touchstart",
-      haptic,
-      { passive: true }
-    );
-
-    startButton.addEventListener(
-      "click",
-      startQuiz
-    );
+    startButton.addEventListener("touchstart", haptic, { passive: true });
+    startButton.addEventListener("click", startQuiz);
   }
 
-  if (!sessionStorage.getItem("p10_vc_fired")) {
-    sessionStorage.setItem("p10_vc_fired", "1");
-
-    track(
-      "ViewContent",
-      {
-        content_name: "Palpite10 Landing"
-      },
-      false
-    );
-  }
+  fireViewContent();
 }
 
 
@@ -910,13 +781,7 @@ function startQuiz() {
     saveState();
   }
 
-  track(
-    "QuizStart",
-    {
-      content_name: "Quiz Start"
-    },
-    true
-  );
+  fireInitiateCheckout();
 
   navigate("/quiz/1");
 }
@@ -926,23 +791,16 @@ function startQuiz() {
    QUIZ
    ========================================================= */
 
-function renderQuiz(
-  questionNumber,
-  direction = "forward"
-) {
-  const question =
-    quizQuestions[questionNumber];
+function renderQuiz(questionNumber, direction = "forward") {
+  const question = quizQuestions[questionNumber];
 
   if (!question) {
     navigate("/");
     return;
   }
 
-  const progress =
-    (questionNumber / 4) * 100;
-
-  const selectedAnswer =
-    state.answers[questionNumber];
+  const progress = (questionNumber / 4) * 100;
+  const selectedAnswer = state.answers[questionNumber];
 
   app.innerHTML = pageTemplate(
     `
@@ -964,9 +822,7 @@ function renderQuiz(
                     ← Voltar
                   </button>
                 `
-                : `
-                  <span></span>
-                `
+                : `<span></span>`
             }
 
             <span class="quiz-counter">
@@ -1011,9 +867,7 @@ function renderQuiz(
               <button
                 type="button"
                 class="answer-card ${
-                  selectedAnswer === answer.id
-                    ? "selected"
-                    : ""
+                  selectedAnswer === answer.id ? "selected" : ""
                 }"
                 data-answer-id="${escapeHTML(answer.id)}"
                 aria-label="${escapeHTML(answer.text)}"
@@ -1034,45 +888,21 @@ function renderQuiz(
     direction
   );
 
-  const backButton =
-    document.getElementById("quiz-back");
+  const backButton = document.getElementById("quiz-back");
 
   if (backButton) {
-    backButton.addEventListener(
-      "click",
-      () => {
-        haptic();
-
-        navigate(
-          `/quiz/${questionNumber - 1}`,
-          {
-            direction: "back"
-          }
-        );
-      }
-    );
+    backButton.addEventListener("click", () => {
+      haptic();
+      navigate(`/quiz/${questionNumber - 1}`, { direction: "back" });
+    });
   }
 
-  document
-    .querySelectorAll(".answer-card")
-    .forEach(button => {
-
-      button.addEventListener(
-        "touchstart",
-        haptic,
-        { passive: true }
-      );
-
-      button.addEventListener(
-        "click",
-        () => {
-          handleAnswer(
-            questionNumber,
-            button.dataset.answerId
-          );
-        }
-      );
+  document.querySelectorAll(".answer-card").forEach(button => {
+    button.addEventListener("touchstart", haptic, { passive: true });
+    button.addEventListener("click", () => {
+      handleAnswer(questionNumber, button.dataset.answerId);
     });
+  });
 }
 
 
@@ -1080,38 +910,20 @@ function renderQuiz(
    ANSWERS
    ========================================================= */
 
-function handleAnswer(
-  questionNumber,
-  answerId
-) {
+function handleAnswer(questionNumber, answerId) {
   haptic();
 
-  const isNewAnswer =
-    state.answers[questionNumber] !== answerId;
+  const isNewAnswer = state.answers[questionNumber] !== answerId;
 
-  state.answers[questionNumber] =
-    answerId;
-
+  state.answers[questionNumber] = answerId;
   saveState();
 
   if (isNewAnswer) {
-    track(
-      `Q${questionNumber}_Answered`,
-      {
-        answer: answerId
-      },
-      true
-    );
+    fireQuizStep(questionNumber, answerId);
   }
 
   if (questionNumber < 4) {
-    navigate(
-      `/quiz/${questionNumber + 1}`,
-      {
-        direction: "forward"
-      }
-    );
-
+    navigate(`/quiz/${questionNumber + 1}`, { direction: "forward" });
     return;
   }
 
@@ -1127,72 +939,33 @@ function handleQualification(answerId) {
     case "q4_a2":
       qualification = "qualified";
       break;
-
     case "q4_a3":
       qualification = "borderline";
       break;
-
     case "q4_a4":
       qualification = "disqualified";
       break;
-
     default:
       qualification = "disqualified";
   }
 
-  state.qualification =
-    qualification;
-
-  state.completedAt =
-    new Date().toISOString();
-
+  state.qualification = qualification;
+  state.completedAt = new Date().toISOString();
   saveState();
 
-  track(
-    "QuizComplete",
-    {
-      qualification
-    },
-    true
-  );
+  fireQuizComplete(qualification);
 
   if (qualification === "qualified") {
-    track(
-      "Qualified_Lead",
-      {},
-      true
-    );
-
-    navigate(
-      "/obrigado?q=qualified"
-    );
-
+    navigate("/obrigado?q=qualified");
     return;
   }
 
   if (qualification === "borderline") {
-    track(
-      "Borderline_Lead",
-      {},
-      true
-    );
-
-    navigate(
-      "/obrigado?q=borderline"
-    );
-
+    navigate("/obrigado?q=borderline");
     return;
   }
 
-  track(
-    "Disqualified_Lead",
-    {},
-    true
-  );
-
-  navigate(
-    "/desqualificado"
-  );
+  navigate("/desqualificado");
 }
 
 
@@ -1200,14 +973,8 @@ function handleQualification(answerId) {
    THANK YOU
    ========================================================= */
 
-function renderThankYou(
-  qualification,
-  direction = "forward"
-) {
-  const type =
-    qualification === "borderline"
-      ? "borderline"
-      : "qualified";
+function renderThankYou(qualification, direction = "forward") {
+  const type = qualification === "borderline" ? "borderline" : "qualified";
 
   const subtitle =
     type === "borderline"
@@ -1226,74 +993,33 @@ function renderThankYou(
 
         <main class="center-content">
 
-          <div
-            class="confirmation-icon"
-            aria-label="Confirmado"
-          >
-            ✓
-          </div>
+          <div class="confirmation-icon" aria-label="Confirmado">✓</div>
 
-          <h1 class="center-title">
-            Você Está Dentro!
-          </h1>
+          <h1 class="center-title">Você Está Dentro!</h1>
 
-          <p class="center-subtitle">
-            ${subtitle}
-          </p>
+          <p class="center-subtitle">${subtitle}</p>
 
           <div class="countdown-wrap">
 
-            <div class="countdown-label">
-              Abrindo seu acesso em
-            </div>
+            <div class="countdown-label">Abrindo seu acesso em</div>
 
-            <div
-              class="countdown"
-              aria-live="polite"
-              aria-label="Contagem regressiva"
-            >
+            <div class="countdown" aria-live="polite" aria-label="Contagem regressiva">
 
-              <svg
-                class="countdown-ring"
-                viewBox="0 0 152 152"
-                aria-hidden="true"
-              >
-                <circle
-                  class="countdown-track"
-                  cx="76"
-                  cy="76"
-                  r="67"
-                />
-
-                <circle
-                  class="countdown-progress"
-                  id="countdown-progress"
-                  cx="76"
-                  cy="76"
-                  r="67"
-                />
+              <svg class="countdown-ring" viewBox="0 0 152 152" aria-hidden="true">
+                <circle class="countdown-track" cx="76" cy="76" r="67" />
+                <circle class="countdown-progress" id="countdown-progress" cx="76" cy="76" r="67" />
               </svg>
 
-              <span
-                class="countdown-number"
-                id="countdown"
-              >
-                8
-              </span>
+              <span class="countdown-number" id="countdown">8</span>
 
             </div>
 
             <p class="countdown-hint">
-              Se não abrir sozinho,
-              toque no botão abaixo.
+              Se não abrir sozinho, toque no botão abaixo.
             </p>
 
             <div class="telegram-button" id="telegram-button">
-              <button
-                type="button"
-                class="primary-button"
-                id="telegram-btn"
-              >
+              <button type="button" class="primary-button" id="telegram-btn">
                 👉 Entrar no Canal Grátis Agora
               </button>
             </div>
@@ -1312,59 +1038,25 @@ function renderThankYou(
     direction
   );
 
-  const telegramButton =
-    document.getElementById("telegram-btn");
+  const telegramButton = document.getElementById("telegram-btn");
 
   if (telegramButton) {
-    telegramButton.addEventListener(
-      "touchstart",
-      haptic,
-      { passive: true }
-    );
-
-    telegramButton.addEventListener(
-      "click",
-      () => {
-        haptic();
-
-        track(
-          "Telegram_Click",
-          {},
-          true
-        );
-
-        openTelegram();
-      }
-    );
+    telegramButton.addEventListener("touchstart", haptic, { passive: true });
+    telegramButton.addEventListener("click", () => {
+      haptic();
+      openTelegram();
+    });
   }
 
-  const vipLink =
-    document.getElementById("vip-link");
+  const vipLink = document.getElementById("vip-link");
 
   if (vipLink) {
-    vipLink.addEventListener(
-      "click",
-      () => {
-        track(
-          "VIP_Click",
-          {},
-          true
-        );
-      }
-    );
+    vipLink.addEventListener("click", () => {
+      fireSubscribeIntent();
+    });
   }
 
-  /*
-    Custom signal: user reached the thank-you page.
-    Used for retargeting; NOT the standard Lead event.
-  */
-  track(
-    "ThankYouPageView",
-    {
-      qualification: type
-    },
-    true
-  );
+  fireThankYouReached(type);
 
   startCountdown();
 }
@@ -1378,13 +1070,9 @@ function vipCardTemplate() {
   return `
     <aside class="vip-card">
 
-      <div class="vip-label">
-        VIP
-      </div>
+      <div class="vip-label">VIP</div>
 
-      <h2 class="vip-title">
-        Quer a experiência completa?
-      </h2>
+      <h2 class="vip-title">Quer a experiência completa?</h2>
 
       <p class="vip-description">
         Membros VIP recebem palpites diários,
@@ -1415,79 +1103,45 @@ function startCountdown() {
 
   let seconds = 8;
 
-  const countdownEl =
-    document.getElementById("countdown");
+  const countdownEl = document.getElementById("countdown");
+  const buttonEl = document.getElementById("telegram-button");
+  const progressEl = document.getElementById("countdown-progress");
 
-  const buttonEl =
-    document.getElementById("telegram-button");
-
-  const progressEl =
-    document.getElementById("countdown-progress");
-
-  if (!countdownEl) {
-    return;
-  }
+  if (!countdownEl) return;
 
   const radius = 67;
-  const circumference =
-    2 * Math.PI * radius;
+  const circumference = 2 * Math.PI * radius;
 
   if (progressEl) {
-    progressEl.style.strokeDasharray =
-      `${circumference}`;
-
-    progressEl.style.strokeDashoffset =
-      "0";
+    progressEl.style.strokeDasharray = `${circumference}`;
+    progressEl.style.strokeDashoffset = "0";
   }
 
   countdownTimer = setInterval(() => {
     seconds--;
 
-    countdownEl.textContent =
-      String(seconds);
+    countdownEl.textContent = String(seconds);
 
     if (progressEl) {
-      const progress =
-        seconds / 8;
-
-      progressEl.style.strokeDashoffset =
-        String(
-          circumference * (1 - progress)
-        );
+      const progress = seconds / 8;
+      progressEl.style.strokeDashoffset = String(circumference * (1 - progress));
     }
 
     if (seconds <= 2 && buttonEl) {
-      buttonEl.classList.add(
-        "is-visible"
-      );
+      buttonEl.classList.add("is-visible");
     }
 
     if (seconds <= 0) {
       clearCountdown();
 
-      track(
-        "Telegram_Redirect",
-        {},
-        true
-      );
-
-      countdownRedirectTimer =
-        setTimeout(() => {
-          openTelegram();
-        }, 300);
+      countdownRedirectTimer = setTimeout(() => {
+        openTelegram();
+      }, 300);
     }
   }, 1000);
 
-  /*
-    Required fallback behavior:
-    show the fallback at 6 seconds.
-  */
   setTimeout(() => {
-    if (buttonEl) {
-      buttonEl.classList.add(
-        "is-visible"
-      );
-    }
+    if (buttonEl) buttonEl.classList.add("is-visible");
   }, 6000);
 }
 
@@ -1510,20 +1164,8 @@ function clearCountdown() {
    ========================================================= */
 
 function openTelegram() {
-  /*
-    Lead fires here — this is the real conversion
-    (user actually opened the Telegram channel).
-    Guarded by leadFired so it fires only once.
-  */
-  fireLead(
-    state.qualification === "qualified"
-      ? 5
-      : 3,
-    "Palpite10 Free Access"
-  );
-
-  window.location.href =
-    CONFIG.telegramFreeUrl;
+  fireLead(state.qualification || "unknown");
+  window.location.href = CONFIG.telegramFreeUrl;
 }
 
 
@@ -1532,21 +1174,22 @@ function openTelegram() {
    ========================================================= */
 
 function getTelegramDownloadUrl() {
-  const ua =
-    navigator.userAgent ||
-    navigator.vendor ||
-    window.opera ||
-    "";
+  const ua = navigator.userAgent || navigator.vendor || window.opera || "";
 
-  if (/iPad|iPhone|iPod/i.test(ua)) {
-    return CONFIG.telegramIosUrl;
-  }
-
-  if (/Android/i.test(ua)) {
-    return CONFIG.telegramAndroidUrl;
-  }
+  if (/iPad|iPhone|iPod/i.test(ua)) return CONFIG.telegramIosUrl;
+  if (/Android/i.test(ua)) return CONFIG.telegramAndroidUrl;
 
   return "https://telegram.org/dl";
+}
+
+
+function getDeviceType() {
+  const ua = navigator.userAgent || "";
+
+  if (/iPhone|iPad|iPod/i.test(ua)) return "ios";
+  if (/Android/i.test(ua)) return "android";
+
+  return "desktop";
 }
 
 
@@ -1554,21 +1197,14 @@ function getTelegramDownloadUrl() {
    DISQUALIFIED
    ========================================================= */
 
-function renderDisqualified(
-  direction = "forward"
-) {
+function renderDisqualified(direction = "forward") {
   app.innerHTML = pageTemplate(
     `
       <div class="container center-page">
 
         <main class="center-content">
 
-          <div
-            class="neutral-icon"
-            aria-hidden="true"
-          >
-            ✈
-          </div>
+          <div class="neutral-icon" aria-hidden="true">✈</div>
 
           <h1 class="center-title">
             Falta Só Um Passo.
@@ -1585,18 +1221,12 @@ function renderDisqualified(
           <div class="steps">
 
             <section class="step-card">
-
               <div class="step-top">
-
-                <div class="step-number">
-                  1
-                </div>
-
+                <div class="step-number">1</div>
                 <h2 class="step-title">
                   Baixe o Telegram.
                   Grátis. Leva 30 segundos.
                 </h2>
-
               </div>
 
               <p class="step-description">
@@ -1613,23 +1243,15 @@ function renderDisqualified(
               >
                 Baixar Telegram
               </a>
-
             </section>
 
-
             <section class="step-card">
-
               <div class="step-top">
-
-                <div class="step-number">
-                  2
-                </div>
-
+                <div class="step-number">2</div>
                 <h2 class="step-title">
                   Depois de instalar,
                   volte aqui e clique abaixo.
                 </h2>
-
               </div>
 
               <a
@@ -1639,7 +1261,6 @@ function renderDisqualified(
               >
                 Já Instalei. Liberar Meu Acesso →
               </a>
-
             </section>
 
           </div>
@@ -1656,78 +1277,32 @@ function renderDisqualified(
     direction
   );
 
-  const download =
-    document.getElementById(
-      "telegram-download"
-    );
+  const download = document.getElementById("telegram-download");
 
   if (download) {
-    download.addEventListener(
-      "click",
-      () => {
-        haptic();
-
-        track(
-          "Telegram_Download_Click",
-          {
-            device: getDeviceType()
-          },
-          true
-        );
-      }
-    );
+    download.addEventListener("click", () => {
+      haptic();
+      fireCustomizeProduct(getDeviceType());
+    });
   }
 
-  const retry =
-    document.getElementById(
-      "retry-access"
-    );
+  const retry = document.getElementById("retry-access");
 
   if (retry) {
-    retry.addEventListener(
-      "click",
-      event => {
-        event.preventDefault();
-
-        haptic();
-
-        navigate(
-          "/obrigado?e=retry&q=qualified"
-        );
-      }
-    );
+    retry.addEventListener("click", event => {
+      event.preventDefault();
+      haptic();
+      navigate("/obrigado?e=retry&q=qualified");
+    });
   }
 
-  const vipLink =
-    document.getElementById("vip-link");
+  const vipLink = document.getElementById("vip-link");
 
   if (vipLink) {
-    vipLink.addEventListener(
-      "click",
-      () => {
-        track(
-          "VIP_Click",
-          {},
-          true
-        );
-      }
-    );
+    vipLink.addEventListener("click", () => {
+      fireSubscribeIntent();
+    });
   }
-}
-
-
-function getDeviceType() {
-  const ua = navigator.userAgent || "";
-
-  if (/iPhone|iPad|iPod/i.test(ua)) {
-    return "ios";
-  }
-
-  if (/Android/i.test(ua)) {
-    return "android";
-  }
-
-  return "desktop";
 }
 
 
@@ -1735,55 +1310,24 @@ function getDeviceType() {
    POPSTATE
    ========================================================= */
 
-window.addEventListener(
-  "popstate",
-  () => {
-    renderRoute("back");
-  }
-);
+window.addEventListener("popstate", () => {
+  renderRoute("back");
+});
 
 
 /* =========================================================
    TOUCH FEEDBACK
    ========================================================= */
 
-document.addEventListener(
-  "touchstart",
-  event => {
-    const target =
-      event.target.closest(
-        "button, a"
-      );
+document.addEventListener("touchstart", event => {
+  const target = event.target.closest("button, a");
+  if (target) target.classList.add("touch-active");
+}, { passive: true });
 
-    if (target) {
-      target.classList.add(
-        "touch-active"
-      );
-    }
-  },
-  {
-    passive: true
-  }
-);
-
-document.addEventListener(
-  "touchend",
-  event => {
-    const target =
-      event.target.closest(
-        "button, a"
-      );
-
-    if (target) {
-      target.classList.remove(
-        "touch-active"
-      );
-    }
-  },
-  {
-    passive: true
-  }
-);
+document.addEventListener("touchend", event => {
+  const target = event.target.closest("button, a");
+  if (target) target.classList.remove("touch-active");
+}, { passive: true });
 
 
 /* =========================================================
@@ -1793,29 +1337,13 @@ document.addEventListener(
 async function initialize() {
   loadState();
 
-  /*
-    Initialize the pixel FIRST using the hardcoded
-    fallback, so the pixel registers before any event
-    can fire, regardless of /api/track availability.
-  */
   initializePixel();
 
-  /*
-    Then optionally refresh config from the server.
-    Non-empty values from the API will overwrite the
-    hardcoded defaults.
-  */
   await loadPublicConfig();
 
-  /*
-    If the API returned a different pixel ID, re-init.
-    (Meta ignores duplicate init calls for the same ID.)
-  */
   if (CONFIG.pixelId && typeof window.fbq === "function") {
     window.fbq("init", CONFIG.pixelId);
   }
-
-  initializeGA4();
 
   if (loading) {
     loading.remove();
