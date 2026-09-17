@@ -1165,7 +1165,27 @@ function clearCountdown() {
 
 function openTelegram() {
   fireLead(state.qualification || "unknown");
-  window.location.href = CONFIG.telegramFreeUrl;
+
+  const ua = navigator.userAgent || "";
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+
+  if (isMobile) {
+    // Attempt to open the app directly using the custom scheme
+    // Note: We remove "https://" and replace it with "tg://"
+    const appLink = "tg://resolve?domain=palpite10gratis";
+    window.location.href = appLink;
+
+    // Fallback: If the app doesn't open within 1.5 seconds, 
+    // it means the user probably doesn't have Telegram installed.
+    // We send them to the web preview (which might still have domain issues, 
+    // but it's the best we can do for non-app users).
+    setTimeout(() => {
+      window.location.href = "https://t.me/palpite10gratis";
+    }, 1500);
+  } else {
+    // Desktop: The web preview is usually fine
+    window.location.href = "https://t.me/palpite10gratis";
+  }
 }
 
 
