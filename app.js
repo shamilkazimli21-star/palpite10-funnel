@@ -36,6 +36,7 @@ const state = {
 let previousRoute = "/";
 let countdownTimer = null;
 let countdownRedirectTimer = null;
+let leadFired = false;
 
 
 /* =========================================================
@@ -374,7 +375,10 @@ function initializePixel() {
 
   window.fbq("init", CONFIG.pixelId);
 
-  window.fbq("track", "PageView");
+  /*
+    PageView is handled centrally in renderRoute so
+    SPA navigations are tracked as well.
+  */
 }
 
 
@@ -427,9 +431,20 @@ function firePixel(
     return;
   }
 
+  /*
+    event_id (snake_case) is used for CAPI dedup.
+    Meta's browser pixel expects eventID (camelCase).
+    Remove event_id from the spread to avoid sending it
+    as a custom parameter.
+  */
+  const {
+    event_id,
+    ...rest
+  } = params;
+
   const payload = {
-    ...params,
-    eventID: params.event_id
+    ...rest,
+    eventID: event_id
   };
 
   if (isCustom) {
@@ -457,6 +472,15 @@ async function fireCAPI(
   params = {},
   isCustom = false
 ) {
+  /*
+    event_id goes to top level (for Meta dedup).
+    Everything else goes inside custom_data.
+  */
+  const {
+    event_id,
+    ...customData
+  } = params;
+
   try {
     await fetch("/api/track", {
       method: "POST",
@@ -465,15 +489,18 @@ async function fireCAPI(
       },
       body: JSON.stringify({
         event_name: eventName,
-        event_id: params.event_id,
+        event_id,
         event_time: Math.floor(Date.now() / 1000),
         event_source_url: window.location.href,
         action_source: "website",
         is_custom: isCustom,
 
-        custom_data: {
-          ...params
-        }
+        user_data: {
+          fbp: getCookie("_fbp"),
+          fbc: getCookie("_fbc")
+        },
+
+        custom_data: customData
       }),
 
       keepalive: true
@@ -548,37 +575,30 @@ function track(
    LEAD
    ========================================================= */
 
+/*
+  Lead represents the real conversion:
+  the user actually opened the Telegram channel.
+
+  Fires only once (guarded by leadFired).
+*/
 function fireLead(
   value,
   label
 ) {
-  const event_id = generateEventId();
-
-  const params = {
-    content_name: label,
-    content_category: "Football Predictions",
-    value,
-    currency: "BRL",
-    event_id
-  };
-
-  if (typeof window.fbq === "function") {
-    window.fbq(
-      "track",
-      "Lead",
-      params,
-      function() {
-        console.log(
-          "Lead pixel confirmed",
-          event_id
-        );
-      }
-    );
+  if (leadFired) {
+    return;
   }
 
-  fireCAPI(
+  leadFired = true;
+
+  track(
     "Lead",
-    params,
+    {
+      content_name: label,
+      content_category: "Football Predictions",
+      value,
+      currency: "BRL"
+    },
     false
   );
 
@@ -590,6 +610,23 @@ function fireLead(
       label
     }
   );
+}
+
+
+/* =========================================================
+   PAGEVIEW
+   ========================================================= */
+
+function firePageView(path) {
+  if (typeof window.fbq === "function") {
+    window.fbq("track", "PageView");
+  }
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "page_view", {
+      page_path: path
+    });
+  }
 }
 
 
@@ -640,6 +677,8 @@ function renderRoute(direction = "forward") {
     path,
     params
   } = getRoute();
+
+  firePageView(path);
 
   if (path === "/") {
     renderLanding(direction);
@@ -823,7 +862,9 @@ function renderLanding(direction = "forward") {
     );
   }
 
-  if (!state.startedAt) {
+  if (!sessionStorage.getItem("p10_vc_fired")) {
+    sessionStorage.setItem("p10_vc_fired", "1");
+
     track(
       "ViewContent",
       {
@@ -844,11 +885,11 @@ function startQuiz() {
   }
 
   track(
-    "InitiateCheckout",
+    "QuizStart",
     {
       content_name: "Quiz Start"
     },
-    false
+    true
   );
 
   navigate("/quiz/1");
@@ -1019,18 +1060,23 @@ function handleAnswer(
 ) {
   haptic();
 
+  const isNewAnswer =
+    state.answers[questionNumber] !== answerId;
+
   state.answers[questionNumber] =
     answerId;
 
   saveState();
 
-  track(
-    `Q${questionNumber}_Answered`,
-    {
-      answer: answerId
-    },
-    true
-  );
+  if (isNewAnswer) {
+    track(
+      `Q${questionNumber}_Answered`,
+      {
+        answer: answerId
+      },
+      true
+    );
+  }
 
   if (questionNumber < 4) {
     navigate(
@@ -1075,6 +1121,14 @@ function handleQualification(answerId) {
     new Date().toISOString();
 
   saveState();
+
+  track(
+    "QuizComplete",
+    {
+      qualification
+    },
+    true
+  );
 
   if (qualification === "qualified") {
     track(
@@ -1275,14 +1329,15 @@ function renderThankYou(
   }
 
   /*
-    Lead fires immediately when the thank-you page
-    is rendered.
+    Custom signal: user reached the thank-you page.
+    Used for retargeting; NOT the standard Lead event.
   */
-  fireLead(
-    type === "qualified"
-      ? 5
-      : 3,
-    "Palpite10 Free Access"
+  track(
+    "ThankYouPageView",
+    {
+      qualification: type
+    },
+    true
   );
 
   startCountdown();
@@ -1429,6 +1484,18 @@ function clearCountdown() {
    ========================================================= */
 
 function openTelegram() {
+  /*
+    Lead fires here — this is the real conversion
+    (user actually opened the Telegram channel).
+    Guarded by leadFired so it fires only once.
+  */
+  fireLead(
+    state.qualification === "qualified"
+      ? 5
+      : 3,
+    "Palpite10 Free Access"
+  );
+
   window.location.href =
     CONFIG.telegramFreeUrl;
 }
@@ -1620,11 +1687,6 @@ function renderDisqualified(
       }
     );
   }
-
-  fireLead(
-    1,
-    "Palpite10 Free Access (Disqualified)"
-  );
 }
 
 
