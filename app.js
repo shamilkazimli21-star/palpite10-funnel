@@ -11,7 +11,13 @@
    ========================================================= */
 
 const CONFIG = {
-  pixelId: "",
+  /*
+    pixelId is hardcoded as a fallback so the browser pixel
+    always initializes, even if /api/track is unreachable.
+    loadPublicConfig() may overwrite it with the value from
+    the server, but only if that value is non-empty.
+  */
+  pixelId: "1105614272040376",
   ga4Id: "",
   telegramFreeUrl: "https://t.me/palpite10gratis",
   telegramVipUrl: "https://t.me/palpite10vipbot",
@@ -276,6 +282,9 @@ function resetState() {
     TELEGRAM_VIP_URL
 
   It NEVER returns META_ACCESS_TOKEN.
+
+  Empty values from the API do NOT overwrite the
+  hardcoded fallbacks above.
 */
 
 async function loadPublicConfig() {
@@ -294,11 +303,11 @@ async function loadPublicConfig() {
 
     const data = await response.json();
 
-    if (data.pixelId) {
+    if (data.pixelId && String(data.pixelId).trim()) {
       CONFIG.pixelId = data.pixelId;
     }
 
-    if (data.ga4Id) {
+    if (data.ga4Id && String(data.ga4Id).trim()) {
       CONFIG.ga4Id = data.ga4Id;
     }
 
@@ -319,7 +328,7 @@ async function loadPublicConfig() {
     }
   } catch (error) {
     console.warn(
-      "Public configuration could not be loaded. Defaults will be used.",
+      "Public configuration could not be loaded. Hardcoded defaults will be used.",
       error
     );
   }
@@ -428,6 +437,9 @@ function firePixel(
   isCustom = false
 ) {
   if (typeof window.fbq !== "function") {
+    console.warn(
+      `[firePixel] "${eventName}" skipped — fbq not initialized.`
+    );
     return;
   }
 
@@ -543,6 +555,13 @@ function track(
   params = {},
   isCustom = false
 ) {
+  if (typeof window.fbq !== "function") {
+    console.warn(
+      `[track] "${eventName}" skipped — fbq not initialized yet.`
+    );
+    return null;
+  }
+
   const event_id = generateEventId();
 
   const enriched = {
@@ -586,6 +605,13 @@ function fireLead(
   label
 ) {
   if (leadFired) {
+    return;
+  }
+
+  if (typeof window.fbq !== "function") {
+    console.warn(
+      "[fireLead] Skipped — fbq not initialized."
+    );
     return;
   }
 
@@ -1767,9 +1793,27 @@ document.addEventListener(
 async function initialize() {
   loadState();
 
+  /*
+    Initialize the pixel FIRST using the hardcoded
+    fallback, so the pixel registers before any event
+    can fire, regardless of /api/track availability.
+  */
+  initializePixel();
+
+  /*
+    Then optionally refresh config from the server.
+    Non-empty values from the API will overwrite the
+    hardcoded defaults.
+  */
   await loadPublicConfig();
 
-  initializePixel();
+  /*
+    If the API returned a different pixel ID, re-init.
+    (Meta ignores duplicate init calls for the same ID.)
+  */
+  if (CONFIG.pixelId && typeof window.fbq === "function") {
+    window.fbq("init", CONFIG.pixelId);
+  }
 
   initializeGA4();
 
