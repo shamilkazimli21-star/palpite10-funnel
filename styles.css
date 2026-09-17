@@ -1,6 +1,6 @@
 /* =========================================================
    PALPITE10 FUNNEL
-   styles.css — mobile-first responsive
+   styles.css — final mobile-first responsive
    ========================================================= */
 
 /* =========================================================
@@ -30,7 +30,6 @@
 
   /*
     Fluid spacing: scales between mobile and tablet.
-    Mobile gets tighter, tablet/desktop gets airier.
   */
   --space-1: clamp(6px, 1.4vw, 8px);
   --space-2: clamp(12px, 2.6vw, 16px);
@@ -78,17 +77,32 @@
 
 
 /* =========================================================
-   RESET
+   RESET + GLOBAL OVERFLOW PROTECTION
    ========================================================= */
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+
+  /*
+    Critical: allows flex and grid children to shrink
+    below their intrinsic content size. Prevents the
+    horizontal overflow that breaks mobile layouts.
+  */
+  min-width: 0;
+
+  /*
+    Prevents long words / URLs from blowing out the
+    layout on narrow screens.
+  */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 html {
   width: 100%;
+  max-width: 100vw;
   min-width: 320px;
 
   overflow-x: hidden;
@@ -110,6 +124,7 @@ html {
 
 body {
   width: 100%;
+  max-width: 100vw;
   min-width: 320px;
   min-height: var(--vh-full);
   margin: 0;
@@ -146,9 +161,6 @@ body {
 
   -webkit-overflow-scrolling: touch;
 
-  /*
-    Prevent tap highlight delay on mobile.
-  */
   touch-action: manipulation;
 }
 
@@ -192,8 +204,11 @@ a {
    APP
    ========================================================= */
 
-.app {
+.app,
+#app {
   width: 100%;
+  max-width: 100vw;
+
   min-height: var(--vh-full);
 
   /*
@@ -224,11 +239,10 @@ a {
 }
 
 .container {
-  width: min(
-    calc(100% - 32px),
-    680px
-  );
+  width: 100%;
+  max-width: 680px;
   margin-inline: auto;
+  padding-inline: 16px;
 }
 
 
@@ -244,17 +258,15 @@ p {
 }
 
 .hero-title {
-  font-size: clamp(28px, 7.5vw, 32px);
+  font-size: clamp(26px, 7.2vw, 32px);
   line-height: 1.08;
   letter-spacing: -0.035em;
   font-weight: 800;
 
-  /*
-    Long Portuguese words shouldn't break layout.
-  */
+  word-break: normal;
   overflow-wrap: break-word;
-  word-break: break-word;
   hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 .hero-highlight {
@@ -262,14 +274,15 @@ p {
 }
 
 .quiz-question {
-  font-size: clamp(20px, 5.8vw, 22px);
+  font-size: clamp(20px, 5.6vw, 22px);
   line-height: 1.16;
   letter-spacing: -0.025em;
   font-weight: 800;
 
+  word-break: normal;
   overflow-wrap: break-word;
-  word-break: break-word;
   hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 .subtitle,
@@ -357,10 +370,9 @@ p {
   line-height: 1.2;
   font-weight: 700;
 
-  /*
-    Wrap long text on narrow screens instead of overflow.
-  */
   white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .badge-dot {
@@ -449,17 +461,7 @@ p {
     opacity var(--transition-fast);
 
   user-select: none;
-
-  /*
-    Prevent text selection from looking like a bug
-    on long-press mobile.
-  */
   -webkit-user-select: none;
-
-  /*
-    Prevent links (in <a>-styled buttons) from being
-    draggable on mobile.
-  */
   -webkit-touch-callout: none;
 }
 
@@ -511,7 +513,12 @@ a:focus-visible {
 
 .trust-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+
+  /*
+    minmax(0, 1fr) is critical — prevents grid columns
+    from overflowing when content is wider than the track.
+  */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 
   margin-top: var(--space-6);
 
@@ -525,6 +532,8 @@ a:focus-visible {
   padding: 18px 6px;
 
   text-align: center;
+
+  overflow: hidden;
 }
 
 .trust-item + .trust-item {
@@ -556,6 +565,7 @@ a:focus-visible {
 
   overflow-wrap: break-word;
   word-break: break-word;
+  hyphens: auto;
 }
 
 .trust-label {
@@ -565,6 +575,8 @@ a:focus-visible {
   line-height: 1.2;
 
   color: var(--text-dim);
+
+  overflow-wrap: break-word;
 }
 
 
@@ -675,9 +687,6 @@ a:focus-visible {
   line-height: 1.35;
   font-weight: 600;
 
-  /*
-    Word-break long answers to avoid overflow.
-  */
   overflow-wrap: break-word;
   word-break: break-word;
 
@@ -829,7 +838,7 @@ a:focus-visible {
 }
 
 .center-title {
-  font-size: clamp(28px, 7.5vw, 32px);
+  font-size: clamp(26px, 7.2vw, 32px);
   line-height: 1.08;
   letter-spacing: -0.035em;
   font-weight: 800;
@@ -926,9 +935,6 @@ a:focus-visible {
   font-size: 12px;
   line-height: 1.45;
 
-  /*
-    Keep hint centered when the button shows/hides.
-  */
   text-align: center;
 }
 
@@ -1033,9 +1039,6 @@ a:focus-visible {
 
   text-decoration: none;
 
-  /*
-    Ensure long link text wraps without overflow.
-  */
   overflow-wrap: break-word;
   word-break: break-word;
 }
@@ -1143,10 +1146,6 @@ a:focus-visible {
 
   margin-top: auto;
   padding-top: var(--space-6);
-
-  /*
-    Give footer some breathing room above the home indicator.
-  */
   padding-bottom: max(0px, var(--safe-bottom));
 
   text-align: center;
@@ -1270,10 +1269,8 @@ a:focus-visible {
 
 @media (min-width: 768px) {
   .container {
-    width: min(
-      calc(100% - 64px),
-      680px
-    );
+    max-width: 680px;
+    padding-inline: 32px;
   }
 
   .hero {
@@ -1327,10 +1324,8 @@ a:focus-visible {
 
 @media (min-width: 1024px) {
   .container {
-    width: min(
-      calc(100% - 80px),
-      760px
-    );
+    max-width: 760px;
+    padding-inline: 40px;
   }
 
   .landing-main {
@@ -1411,14 +1406,11 @@ a:focus-visible {
 
 @media (max-width: 360px) {
   .container {
-    width: min(
-      calc(100% - 24px),
-      680px
-    );
+    padding-inline: 12px;
   }
 
   .hero-title {
-    font-size: 26px;
+    font-size: 24px;
   }
 
   .hero-subtitle {
@@ -1484,7 +1476,8 @@ a:focus-visible {
    ========================================================= */
 
 @media (max-height: 500px) and (orientation: landscape) {
-  .app {
+  .app,
+  #app {
     padding-top: max(12px, var(--safe-top));
     padding-bottom: max(12px, var(--safe-bottom));
   }
@@ -1526,8 +1519,8 @@ a:focus-visible {
 
 
 /* =========================================================
-   HOVER: NONE (touch devices) — remove hover-only effects
-   that can stick on touch.
+   HOVER: NONE (touch devices)
+   Remove hover-only effects that can stick on touch.
    ========================================================= */
 
 @media (hover: none) {
